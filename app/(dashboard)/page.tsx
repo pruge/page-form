@@ -91,7 +91,7 @@ function StatsCards(props: StatsCardProps) {
   )
 }
 
-function StatsCard(props: {
+export function StatsCard(props: {
   title: string
   icon: React.ReactNode
   helperText: string
