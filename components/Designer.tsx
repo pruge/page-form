@@ -112,11 +112,14 @@ function Designer() {
           {!droppable.isOver && elements.length === 0 && (
             <p className="text-3xl text-muted-foreground flex flex-grow items-center font-bold">Drop here</p>
           )}
-          <div className="flex flex-col flex-grow text-background w-full gap-2 p-4">
-            {elements.length > 0 &&
-              elements.map((element, index) => <DesignerElementWrapper key={element.id} element={element} />)}
-            {droppable.isOver && <div className="h-[120px] rounded-md bg-primary/20"></div>}
-          </div>
+          {elements.length > 0 && (
+            <div className="flex flex-col flex-grow text-background w-full gap-2 p-4">
+              {elements.map((element, index) => (
+                <DesignerElementWrapper key={element.id} element={element} />
+              ))}
+              {droppable.isOver && <div className="h-[120px] rounded-md bg-primary/20"></div>}
+            </div>
+          )}
         </div>
       </div>
 

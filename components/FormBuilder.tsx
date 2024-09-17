@@ -17,7 +17,7 @@ import {BsArrowLeft, BsArrowRight} from 'react-icons/bs'
 import Confetti from 'react-confetti'
 
 function FormBuilder({form}: {form: Form}) {
-  const {setElements} = useDesigner()
+  const {setElements, setSelectedElement} = useDesigner()
 
   const mouseSensor = useSensor(MouseSensor, {
     activationConstraint: {
@@ -34,7 +34,8 @@ function FormBuilder({form}: {form: Form}) {
   useLayoutEffect(() => {
     const elements = JSON.parse(form.content)
     setElements(elements)
-  }, [form, setElements])
+    setSelectedElement(null)
+  }, [form, setElements, setSelectedElement])
 
   if (form.published) {
     const shareUrl = `${window.location.origin}/submit/${form.shareURL}`

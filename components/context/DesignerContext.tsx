@@ -13,6 +13,9 @@ type DesignerContextType = {
 
   selectedElement: FormElementInstance | null
   setSelectedElement: Dispatch<SetStateAction<FormElementInstance | null>>
+
+  isChanged: boolean
+  setIsChanged: Dispatch<SetStateAction<boolean>>
 }
 
 export const DesignerContext = createContext<DesignerContextType | null>(null)
@@ -20,6 +23,7 @@ export const DesignerContext = createContext<DesignerContextType | null>(null)
 export default function DesignerContextProvider({children}: {children: React.ReactNode}) {
   const [elements, setElements] = useState<FormElementInstance[]>([])
   const [selectedElement, setSelectedElement] = useState<FormElementInstance | null>(null)
+  const [isChanged, setIsChanged] = useState(false)
 
   const addElement = (index: number, element: FormElementInstance) => {
     setElements((prev) => {
@@ -27,10 +31,12 @@ export default function DesignerContextProvider({children}: {children: React.Rea
       newElements.splice(index, 0, element)
       return newElements
     })
+    setIsChanged(true)
   }
 
   const removeElement = (id: string) => {
     setElements((prev) => prev.filter((element) => element.id !== id))
+    setIsChanged(true)
   }
 
   const updateElement = (id: string, element: FormElementInstance) => {
@@ -40,6 +46,7 @@ export default function DesignerContextProvider({children}: {children: React.Rea
       newElements[index] = element
       return newElements
     })
+    setIsChanged(true)
   }
 
   const moveElement = (activeId: string, overId: string, addOverIndex: number = 0) => {
@@ -52,12 +59,14 @@ export default function DesignerContextProvider({children}: {children: React.Rea
       newElements.splice(newOverElementIndex, 0, activeElement)
       return newElements
     })
+    setIsChanged(true)
   }
 
   return (
     <DesignerContext.Provider
       value={{
         elements,
+
         setElements,
         addElement,
         removeElement,
@@ -65,6 +74,9 @@ export default function DesignerContextProvider({children}: {children: React.Rea
         moveElement,
         selectedElement,
         setSelectedElement,
+
+        isChanged,
+        setIsChanged,
       }}
     >
       {children}

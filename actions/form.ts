@@ -81,6 +81,38 @@ export async function GetForms() {
   return forms
 }
 
+export async function GetFormWithSubmissions(id: number) {
+  const user = await currentUser()
+  if (!user) {
+    throw new UserNotFoundErr()
+  }
+  return await prisma.form.findUnique({
+    where: {
+      userId: user.id,
+      id,
+    },
+    include: {
+      FormSubmisstions: true,
+    },
+  })
+}
+
+export async function GetFormContentByUrl(url: string) {
+  return await prisma.form.update({
+    where: {
+      shareURL: url,
+    },
+    select: {
+      content: true,
+    },
+    data: {
+      visits: {
+        increment: 1,
+      },
+    },
+  })
+}
+
 export async function GetFormById(id: number) {
   const user = await currentUser()
   if (!user) {
@@ -124,6 +156,25 @@ export async function PublishForm(id: number) {
     },
     data: {
       published: true,
+    },
+  })
+}
+
+export async function SubmitForm(formUrl: string, content: string) {
+  const form = await prisma.form.update({
+    where: {
+      shareURL: formUrl,
+      published: true,
+    },
+    data: {
+      submissions: {
+        increment: 1,
+      },
+      FormSubmisstions: {
+        create: {
+          content,
+        },
+      },
     },
   })
 }

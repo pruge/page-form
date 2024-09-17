@@ -9,7 +9,7 @@ function ErrorPage({error}: {error: Error}) {
     console.error(error)
   }, [error])
   return (
-    <div className="flex w-full h-full flex-col items-center justify-center">
+    <div className="flex w-full flex-grow flex-col items-center justify-center">
       <h2 className="text-destructive text-4xl">Something went wrong!</h2>
       <Button asChild className="mt-4">
         <Link href={'/'}>Go back to home</Link>

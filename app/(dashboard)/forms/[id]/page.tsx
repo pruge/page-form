@@ -1,4 +1,4 @@
-import {GetFormById} from '@/actions/form'
+import {GetFormById, GetFormWithSubmissions} from '@/actions/form'
 import FormLinkShare from '@/components/FormLinkShare'
 import VisitBtn from '@/components/VisitBtn'
 import {StatsCard} from '../../page'
@@ -6,6 +6,12 @@ import {LuView} from 'react-icons/lu'
 import {FaWpforms} from 'react-icons/fa'
 import {HiCursorClick} from 'react-icons/hi'
 import {TbArrowBounce} from 'react-icons/tb'
+import {ElementsType, FormElementInstance} from '@/components/FormElement'
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@/components/ui/table'
+import {format, formatDistance} from 'date-fns'
+import {ReactNode} from 'react'
+import {Badge} from '@/components/ui/badge'
+import {Checkbox} from '@radix-ui/react-checkbox'
 
 async function FormPage({params}: {params: {id: string}}) {
   const {id} = params
@@ -56,7 +62,7 @@ async function FormPage({params}: {params: {id: string}}) {
           title="submissions rate"
           icon={<HiCursorClick className="text-green-600" />}
           helperText="visits that result in form submission"
-          value={submissions.toLocaleString() || '0'}
+          value={submissionRate.toLocaleString() + '%' || ''}
           loading={false}
           className="shadow-md shadow-green-600"
         />
@@ -64,7 +70,7 @@ async function FormPage({params}: {params: {id: string}}) {
           title="Bounce rate"
           icon={<TbArrowBounce className="text-red-600" />}
           helperText="visits that leaves without interacting"
-          value={submissions.toLocaleString() || '0'}
+          value={bounceRate.toLocaleString() + '%' || ''}
           loading={false}
           className="shadow-md shadow-red-600"
         />
@@ -79,10 +85,101 @@ async function FormPage({params}: {params: {id: string}}) {
 
 export default FormPage
 
-function SubmissionsTable({id}: {id: number}) {
+async function SubmissionsTable({id}: {id: number}) {
+  type Row = Record<string, string>
+
+  const form = await GetFormWithSubmissions(id)
+
+  if (!form) {
+    throw new Error('form not found')
+  }
+
+  const formElements = JSON.parse(form.content) as FormElementInstance[]
+  const columns: {
+    id: string
+    label: string
+    required: boolean
+    type: ElementsType
+  }[] = []
+
+  formElements.forEach((element) => {
+    switch (element.type) {
+      case 'TextField':
+      case 'NumberField':
+      case 'TextAreaField':
+      case 'DateField':
+      case 'SelectField':
+      case 'CheckboxField':
+        columns.push({
+          id: element.id,
+          label: (element.extraAttributes?.label ?? '') as string,
+          required: (element.extraAttributes?.required ?? false) as boolean,
+          type: element.type,
+        })
+
+        break
+
+      default:
+        break
+    }
+  })
+
+  const rows: Row[] = []
+  form.FormSubmisstions.forEach((submission) => {
+    const content = JSON.parse(submission.content) as Record<string, string>
+    rows.push({
+      ...content,
+      submittedAt: formatDistance(submission.createdAt, new Date(), {
+        addSuffix: true,
+      }),
+    })
+  })
+
   return (
     <div className="container">
       <h1 className="text-2xl font-bold my-4">Submissions</h1>
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              {columns.map((column) => (
+                <TableHead key={column.id} className="uppercase">
+                  {column.label}
+                </TableHead>
+              ))}
+              <TableHead className="text-muted-foreground text-right uppercase">Submitted at</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((row, index) => (
+              <TableRow key={index}>
+                {columns.map((column) => (
+                  <RowCell key={column.id} type={column.type} value={row[column.id as keyof typeof row]} />
+                ))}
+                <TableCell className="text-muted-foreground text-right">{row.submittedAt}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   )
+}
+
+function RowCell({type, value}: {type: ElementsType; value: string}) {
+  let node: ReactNode = value
+
+  switch (type) {
+    case 'DateField':
+      if (!value) break
+      const date = new Date(value)
+      node = <Badge variant={'outline'}>{format(date, 'yyyy-MM-dd')}</Badge>
+      break
+    case 'CheckboxField':
+      const checked = value === 'true'
+      node = <Checkbox checked={checked} disabled />
+      break
+  }
+
+  return <TableCell>{node}</TableCell>
 }

@@ -26,7 +26,7 @@ function SidebarBtnElement({formElement}: {formElement: FormElement}) {
       {...draggable.attributes}
     >
       <Icon className="h-8 w-8 text-primary" />
-      <p className="text-xs">{label}</p>
+      <p className="text-xs w-[90px] text-wrap">{label}</p>
     </Button>
   )
 }
@@ -50,7 +50,7 @@ export function SidebarBtnElementDragOverlay({formElement}: {formElement: FormEl
       {...draggable.attributes}
     >
       <Icon className="h-8 w-8 text-primary" />
-      <p className="text-xs">{label}</p>
+      <p className="text-xs w-[90px] text-wrap">{label}</p>
     </Button>
   )
 }

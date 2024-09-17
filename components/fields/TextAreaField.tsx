@@ -12,13 +12,17 @@ import useDesigner from '../hooks/useDesigner'
 import {Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage} from '../ui/form'
 import {Switch} from '../ui/switch'
 import {cn} from '@/lib/utils'
+import {BsTextareaResize} from 'react-icons/bs'
+import {Textarea} from '../ui/textarea'
+import {Slider} from '../ui/slider'
 
-const type: ElementsType = 'TextField'
+const type: ElementsType = 'TextAreaField'
 const extraAttributes = {
-  label: 'Text field',
+  label: 'TextArea field',
   helperText: 'Helper text',
   required: false,
   placeholder: 'Value here...',
+  rows: 3,
 }
 
 const propertiesSchema = z.object({
@@ -26,9 +30,10 @@ const propertiesSchema = z.object({
   helperText: z.string().max(200),
   required: z.boolean().default(false),
   placeholder: z.string().max(50),
+  rows: z.number().min(1).max(10),
 })
 
-export const TextFieldFormElement: FormElement = {
+export const TextAreaFieldFormElement: FormElement = {
   type,
   construct: (id: string) => ({
     id,
@@ -36,8 +41,8 @@ export const TextFieldFormElement: FormElement = {
     extraAttributes,
   }),
   designerBtnElement: {
-    icon: MdTextFields,
-    label: 'Text Field',
+    icon: BsTextareaResize,
+    label: 'TextArea Field',
   },
   designerComponent: DesignerComponent,
   formComponent: FormComponent,
@@ -55,7 +60,7 @@ type CustomInstance = FormElementInstance & {
 
 function DesignerComponent({elementInstance}: {elementInstance: FormElementInstance}) {
   const element = elementInstance as CustomInstance
-  const {label, required, placeholder, helperText} = element.extraAttributes
+  const {label, required, placeholder, helperText, rows} = element.extraAttributes
 
   return (
     <div className="flex flex-col gap-2 w-full">
@@ -63,7 +68,7 @@ function DesignerComponent({elementInstance}: {elementInstance: FormElementInsta
         {label}
         {required && '*'}
       </Label>
-      <Input readOnly disabled placeholder={placeholder} />
+      <Textarea readOnly disabled placeholder={placeholder} />
       {helperText && <p className="text-muted-foreground text=[0.8rem]">{helperText}</p>}
     </div>
   )
@@ -173,6 +178,29 @@ function PropertiesComponent({elementInstance}: {elementInstance: FormElementIns
           )}
         />
 
+        {/* rows */}
+        <FormField
+          control={form.control}
+          name="rows"
+          render={({field}) => (
+            <FormItem>
+              <FormLabel>Rows: {field.value}</FormLabel>
+              <FormControl>
+                <Slider
+                  min={1}
+                  max={10}
+                  defaultValue={[field.value]}
+                  step={1}
+                  onValueChange={(value) => {
+                    field.onChange(value[0])
+                  }}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         {/* required */}
         <FormField
           control={form.control}
@@ -212,7 +240,7 @@ function FormComponent({
   defaultValue?: string
 }) {
   const element = elementInstance as CustomInstance
-  const {label, required, placeholder, helperText} = element.extraAttributes
+  const {label, required, placeholder, helperText, rows} = element.extraAttributes
   const [value, setValue] = useState(defaultValue ?? '')
   const [error, setError] = useState(false)
 
@@ -227,18 +255,19 @@ function FormComponent({
         {label}
         {required && '*'}
       </Label>
-      <Input
+      <Textarea
         className={cn(error ? 'border-red-500' : '')}
         placeholder={placeholder}
         onChange={(e) => setValue(e.target.value)}
         onBlur={(e) => {
           if (!submitValue) return
-          const valid = TextFieldFormElement.validate(element, e.target.value)
+          const valid = TextAreaFieldFormElement.validate(element, e.target.value)
           setError(!valid)
           if (!valid) return
           submitValue(element.id, e.target.value)
         }}
         value={value}
+        rows={rows}
       />
       {helperText && <p className={cn(error ? 'text-red-500' : 'text-muted-foreground text=[0.8rem]')}>{helperText}</p>}
     </div>

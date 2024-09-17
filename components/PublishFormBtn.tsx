@@ -12,12 +12,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from './ui/alert-dialog'
-import {FaIcons} from 'react-icons/fa'
+import {FaSpinner} from 'react-icons/fa'
 import {toast} from '@/hooks/use-toast'
 import {PublishForm} from '@/actions/form'
 import {useRouter} from 'next/navigation'
+import useDesigner from './hooks/useDesigner'
 
 function PublishFormBtn({id}: {id: number}) {
+  const {elements, isChanged} = useDesigner()
   const [loading, startTransition] = useTransition()
   const router = useRouter()
 
@@ -40,7 +42,11 @@ function PublishFormBtn({id}: {id: number}) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant={'outline'} className="gap-2 text-white bg-gradient-to-r from-indigo-400 to-cyan-400">
+        <Button
+          variant={'outline'}
+          className="gap-2 text-white bg-gradient-to-r from-indigo-400 to-cyan-400"
+          disabled={isChanged || elements.length === 0}
+        >
           <MdOutlinePublish className="h-4 w-4" />
           Publish
         </Button>
@@ -66,7 +72,7 @@ function PublishFormBtn({id}: {id: number}) {
               startTransition(publishForm)
             }}
           >
-            Proceed {loading && <FaIcons className="animate-spin ml-2" />}
+            Proceed {loading && <FaSpinner className="animate-spin ml-2" />}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
